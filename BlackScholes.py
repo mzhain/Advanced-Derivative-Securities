@@ -106,8 +106,56 @@ def Black_Scholes_call_Implied_Vol(S, K, r, q, T, CallPrice):
         return guess
 
 
+def Simulated_Delta_Hedge_Profit(S0, K, r, sigma, q, T, mu, M, N, pct):
+    # inputs
+    """ S0 = initial stock price
+        K = strike price
+        r = risk-free rate
+        sigma = volatility
+        q = dividend yield
+        T = time to maturity
+        mu = expected rate of return
+        N = number of time periods
+        M = number of simulations
+        pct = percentile to be returned"""
+    dt = T / N
+    sigSqrdt = sigma * math.sqrt(dt)
+    drift = (mu - q - 0.5 * sigma * sigma) * dt
+    comp = math.exp(r * dt)
+    div = math.exp(q * dt) - 1
+    logS0 = math.log(S0)
+    call0 = Black_Scholes_Call(S0, K, r, sigma, q, T)
+    delta0 = Black_Scholes_Call_Delta(S0, K, r, sigma, q, T)
+    cash0 = call0 - delta0 * S0     # initial cash position
+    profit = np.zeros(M)
+    for i in range(0, M):
+        logS = logS0
+        cash = cash0
+        S = S0
+        delta = delta0
+        for j in range(1, N-1):
+            logS = logS + drift + sigSqrdt * RandN()
+            newS = math.exp(logS)
+            newDelta = Black_Scholes_Call_Delta(newS, K, r, sigma, q, T - j * dt)
+            cash = comp * cash + delta * S * div - (newDelta - delta) * newS
+            S = newS
+            delta = newDelta
+        logS = logS + drift + sigSqrdt * RandN()
+        newS = math.exp(logS)
+        hedgeValue = comp * cash + delta * S * div + delta * newS
+        profit[i] = hedgeValue - max(newS - K, 0)
+
+    for i in profit:
+        print(i)
+
+    return np.percentile(profit, pct)
+
+
+
 
 print(Black_Scholes_Call(50, 40, 0.05, 0.3, 0.02, 2))
 print(Black_Scholes_Put(50, 40, 0.05, 0.3, 0.02, 2))
 print(Black_Scholes_Call_Delta(50, 40, 0.05, 0.3, 0.02, 2))
 print(Black_Scholes_Call_Gamma(50, 40, 0.05, 0.3, 0.02, 2))
+print(Black_Scholes_call_Implied_Vol(50, 40, 0.05, 0.02, 2, 20))
+print(Simulated_Delta_Hedge_Profit(50, 40, 0.05, 0.3, 0.02, 2, 0.12, 1000, 20, 0.05))
