@@ -113,4 +113,3 @@ def Simulating_Stochastic_Volatility():
 
     plt.show()
 
-Simulating_Stochastic_Volatility()
