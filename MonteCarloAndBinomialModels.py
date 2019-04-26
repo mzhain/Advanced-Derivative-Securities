@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from Appendix import RandN, cumulative_standard_normal
+from Appendix import RandN
 
 def European_Call_MC(S, K, r, sigma, q, T, M):
     # inputs
