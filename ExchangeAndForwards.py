@@ -57,8 +57,3 @@ def Margrabe_Deferred(S1, S2, sigma, q1, q2, Tmat, Texch):
        Texch = time until exchange >= TOption"""
     return Generic_Option(math.exp(-q1 * Texch) * S1, math.exp(-q2 * Texch) * S2, sigma, Tmat)
 
-print(Generic_Option(50, 40, 0.3, 2))
-print(Margrabe(50, 40, 0.3, 0.02, 0.01, 2))
-print(Black_Call(50, 40, 0.9, 0.3, 2))
-print(Black_Put(50, 40, 0.9, 0.3, 2))
-print(Margrabe_Deferred(50, 40, 0.3, 0.02, 0.01, 2, 3))

@@ -2,6 +2,7 @@ import numpy as np
 import math
 from Appendix import RandN, cumulative_standard_normal
 from ExchangeAndForwards import Generic_Option
+from BlackScholes import Black_Scholes_Call
 
 def BiNormalProb(a, b, rho):
     x = [0.24840615, 0.39233107, 0.21141819, 0.03324666, 0.00082485334]
@@ -44,5 +45,57 @@ def Forward_Start_Call(S, r, sigma, q, Tset, TCall):
     return Generic_Option(P1, P2, sigma, TCall - Tset)
 
 
-print(BiNormalProb(0, 1, 0.5))
+def Call_On_Call(S, Kc, Ku, r, sigma, q, Tc, Tu):
+    # inputs
+    """S = initial stock price
+       Kc = strike price of compound call
+       Ku = strike price of underlying call option
+       r = risk-free rate
+       sigma = volatility
+       q = dividend yield
+       Tc = time to maturity of compound call
+       Tu = time to maturity of underlying call >= Tc"""
+    tol = math.pow(10, -6)
+    lower = 0
+    upper = math.exp(q * (Tu - Tc)) * (Kc + Ku)
+    guess = 0.5 * lower + 0.5 * upper
+    flower = -Kc
+    fupper = Black_Scholes_Call(upper, Ku, r, sigma, q, Tu - Tc) - Kc
+    fguess = Black_Scholes_Call(guess, Ku, r, sigma, q, Tu - Tc) - Kc
+    while upper - lower > tol:
+        if fupper * fguess < 0:
+            lower = guess
+            flower = fguess
+            guess = 0.5 * lower + 0.5 * upper
+            fguess = Black_Scholes_Call(guess, Ku, r, sigma, q, Tu - Tc) - Kc
+        else:
+            upper = guess
+            fupper = fguess
+            guess = 0.5 * lower + 0.5 * upper
+            fguess = Black_Scholes_Call(guess, Ku, r, sigma, q, Tu - Tc) - Kc
+    Sstar = guess
+    #print(Sstar)
+
+    d1 = (math.log(S / Sstar) + (r - q + math.pow(sigma, 2) / 2) * Tc) / (sigma * math.sqrt(Tc))
+    d2 = d1 - sigma * math.sqrt(Tc)
+    d1prime = (math.log(S / Ku) + (r - q + math.pow(sigma, 2) / 2) * Tu) / (sigma * math.sqrt(Tu))
+    d2prime = d1prime - sigma * math.sqrt(Tu)
+    rho = math.sqrt(Tc / Tu)
+    #print(d1)
+    #print(d2)
+    #print(rho)
+    N2 = cumulative_standard_normal(d2)
+    print(N2)
+    M1 = BiNormalProb(d1, d1prime, rho)
+    print(M1)
+    M2 = BiNormalProb(d2, d2prime, rho)
+    print(M2)
+    return -math.exp(-r * Tc) * Kc * N2 + math.exp(-q * Tu) * S * M1 - math.exp(-r * Tu) * Ku * M2
+
+
+
+
+
+print(BiNormalProb(0, 1, 0.3))
 print(Forward_Start_Call(50, 0.05, 0.3, 0.02, 1, 2))
+print(Call_On_Call(50, 10, 40, 0.05, 0.3, 0.02, 1, 2)) # not working
