@@ -152,7 +152,7 @@ def Simulated_Delta_Hedge_Profit(S0, K, r, sigma, q, T, mu, M, N, pct):
 
 
 
-
+print("hello")
 print(Black_Scholes_Call(50, 40, 0.05, 0.3, 0.02, 2))
 print(Black_Scholes_Put(50, 40, 0.05, 0.3, 0.02, 2))
 print(Black_Scholes_Call_Delta(50, 40, 0.05, 0.3, 0.02, 2))
